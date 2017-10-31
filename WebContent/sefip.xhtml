@@ -1,0 +1,933 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:p="http://primefaces.org/ui">
+    
+<h:head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta>
+    <title>SEFIP</title>
+</h:head>
+
+<f:event listener="#{BeanSefip.load}" type="preRenderView" />
+
+<p:dialog modal="true" widgetVar="statusDialog" header="" draggable="false" closable="false" resizable="false">
+    <h:outputText value="AGUARDE . . ." />
+</p:dialog>
+
+<script type="text/javascript">
+
+    
+
+function Trim(str){
+	return str.replace(/^\s+|\s+$/g," ");
+}
+
+function TrimNumero(str){
+	
+	
+	if (  isNaN(   str )   ) { 
+		str = str.replace(/\D/g,""); 
+		return  str;//str.replace(str,"");
+	} 
+	
+	return str.replace(/^\s+|\s+$/g,"");
+}
+
+function strToUpper(texto){     
+    //para usar onkeyup="strToUpper(this)"    
+    texto.value = texto.value.toUpperCase();    
+}
+
+
+function start() {
+    PF('statusDialog').show();
+}
+function stop() {
+    PF('statusDialog').hide();
+}
+
+function mascara(o,f){ 
+	v_obj=o 
+	v_fun=f 
+	setTimeout("execmascara()",1) 
+} 
+function execmascara(){ 
+	v_obj.value=v_fun(v_obj.value) 
+} 
+function moeda(v){ 
+	v=v.replace(/\D/g,""); // permite digitar apenas numero 
+	v=v.replace(/(\d{1})(\d{15})$/,"$1.$2") // coloca ponto antes dos ultimos digitos 
+	v=v.replace(/(\d{1})(\d{11})$/,"$1.$2") // coloca ponto antes dos ultimos 11 digitos 
+	v=v.replace(/(\d{1})(\d{8})$/,"$1.$2") // coloca ponto antes dos ultimos 8 digitos 
+	v=v.replace(/(\d{1})(\d{5})$/,"$1.$2") // coloca ponto antes dos ultimos 5 digitos 
+	v=v.replace(/(\d{1})(\d{1,2})$/,"$1,$2") // coloca virgula antes dos ultimos 2 digitos 
+	return v; 
+}
+</script>
+
+
+
+<h:body>
+	<p:layout style="min-width:600px;min-height:500px;">
+		    <p:layoutUnit position="west" size="400" header="SELECIONE O ARQUIVO RE" resizable="true" closable="false" collapsible="true">
+	        	 <h:panelGrid columns="2" cellpadding="0" >
+					<h:form id="uploadRE">
+					  <h:panelGrid>
+					    <p:fileUpload fileUploadListener="#{BeanSefip.upload}" 
+					      allowTypes="/(\.|\/)RE$/" sizeLimit="999999999999999" fileLimit="1" multiple="true" description="Selecione o Arquivo RE"/>
+					  </h:panelGrid>
+			
+					  <br style="clear: left;" />
+					  			  
+					  <p:outputPanel  style="width: 100%; text-align:center" layout="block">
+					 		<p:commandButton  value="PROCESSAR" id="nonAjax" actionListener="#{BeanSefip.load}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"/>
+						</p:outputPanel>
+					</h:form>
+			 </h:panelGrid>		
+	 
+			<br style="clear: left;" />
+			<br style="clear: left;" />
+			
+					
+		    </p:layoutUnit>
+		    <p:layoutUnit position="center">
+				<h:form id="uploadCamposTela">
+				    <p:tabView>
+				        <p:tab title="30/32 - Registro do Trabalhador" >
+				            <h:panelGrid columns="4" cellpadding="0">
+				               	<br style="clear: left;" />
+								<br style="clear: left;" />
+				                <h:outputText value="FUNCIONARIO:" />
+								<p:selectOneMenu  id="funcio" valueChangeListener="#{BeanSefip.comboFuncionarioSelecionado}">                  
+									<f:selectItem itemLabel="Selecione o Funcionario" itemValue="Selecione o Funcionario" />
+									<f:selectItems value="#{BeanSefip.carregaComboFuncionario}"/>  
+					                <p:ajax event="change" update="RegistrodoTrabalhador,funcioMovimentacao,RegistrodoTrabalhadorMoviment,InclusãoAlteraoEndereçodoTrabalhador,AlteraçaoCadastralTrabalhador" />
+								</p:selectOneMenu> 																	     
+				            </h:panelGrid>
+				            <br style="clear: left;" />
+				            <p:panel id="RegistrodoTrabalhador" header="30 - Registro do Trabalhador" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+									<h:outputText value="Tipo Registo:" />
+									<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto30"  value="#{BeanSefip.setSefip.bloco30TipoRegisto}" /> 
+								
+									<h:outputLink id="openDialogLink3"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+									<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa30"  value="#{BeanSefip.setSefip.bloco30TipoInscricaoEmpresa}" mask="9"/>  								
+									
+	
+									<h:outputText value="Inscricao Empresa:" />
+									<p:inputText  maxlength="14" style="text-align:right" id="InscricaoEmpresa30"  value="#{BeanSefip.setSefip.bloco30InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+	
+	
+									<h:outputLink id="openDialogLink5"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoObra').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Obra:" /></h:outputLink>									
+									<p:inputText  maxlength="1" style="text-align:right" id="TipoInscricaoObra30" value="#{BeanSefip.setSefip.bloco30TipoInscricaoObra}" onkeyup="this.value = TrimNumero( this.value )"/> 
+									
+									<h:outputText value="Inscri. Obra:"/>
+									<p:inputText  maxlength="14" style="text-align:right" id="InscricaTomadorObraConstrucaoCivel30"  value="#{BeanSefip.setSefip.bloco30InscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+									
+									<h:outputText value="&#160;&#160;&#160;Pis Pase Ci:"/>
+									<p:inputText  maxlength="11" style="text-align:right" id="PisPaseCi130"  value="#{BeanSefip.setSefip.bloco30PisPaseCi}" onkeyup="this.value = TrimNumero( this.value )"/> 
+									
+									
+									<h:outputText value="Data Admissão:"/>  
+									<p:inputMask style="text-align:right" id="DataAdm30"  value="#{BeanSefip.setSefip.bloco30DataAdm}" mask="99/99/9999"/>
+									
+									<h:outputLink id="openDialogLink"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('dlg').show();"><h:outputText value="&#160;&#160;&#160;Categoria"/></h:outputLink>
+									<p:inputMask style="text-align:right" id="Categoria30"  value="#{BeanSefip.setSefip.bloco30Categoria}"  mask="99"/>
+	
+									<h:outputText value="Nome Traba.:"/>
+									<p:inputText  maxlength="70" style="text-align:right" id="NomeTrabalhador30"  value="#{BeanSefip.setSefip.bloco30NomeTrabalhador}" onkeyup="this.value = Trim( this.value );strToUpper(this)" />  																								
+	
+									<h:outputText value="&#160;&#160;&#160;Matricula:"/>
+									<p:inputText  maxlength="11" style="text-align:right" id="Matricula30"  value="#{BeanSefip.setSefip.bloco30MatriculaEmpregado}" onkeyup="this.value = TrimNumero( this.value )"/> 
+									
+									<h:outputText value="Numero CTPS:"/>
+									<p:inputText  maxlength="7" style="text-align:right" id="NumeroCTPS30" value="#{BeanSefip.setSefip.bloco30NumeroCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+									
+									<h:outputText value="&#160;&#160;&#160;Serie CTPS:"/>
+									<p:inputText  maxlength="5" style="text-align:right" id="SerieCTPS30"  value="#{BeanSefip.setSefip.bloco30SerieCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+									
+									<h:outputText value="Data Opcao:"/>
+									<p:inputMask style="text-align:right" id="DataOpcao30" value="#{BeanSefip.setSefip.bloco30DataOpcao}" mask="99/99/9999"/>
+									 
+									 
+									<h:outputText value="&#160;&#160;&#160;Nascimento:"/>
+									<p:inputMask style="text-align:right" id="DataNascimento30" value="#{BeanSefip.setSefip.bloco30DataNascimento}" mask="99/99/9999" />									
+									
+									<h:outputText value="C B O:"/>
+									<p:inputText  maxlength="5" style="text-align:right" id="cbo30" value="#{BeanSefip.setSefip.bloco30CBO}" /> 
+									
+									<h:outputText value="&#160;&#160;&#160;Remune.Sem13:"/>
+									<p:inputText  maxlength="15" style="text-align:right" id="RemuneracaoSem1330"  value="#{BeanSefip.setSefip.bloco30RemuneracaoSem13}"  onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)" onkeypress="mascara(this,moeda);" onfocus="mascara(this,moeda)"/> 
+									
+									<h:outputText value="Remune.13:"/>
+									<p:inputText  maxlength="15" style="text-align:right" id="Remuneracao1330"  value="#{BeanSefip.setSefip.bloco30Remuneracao13}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>																																																								
+																	 													
+									<h:outputText value="&#160;&#160;&#160;Classe Contribui.:"/>
+									<p:inputText  maxlength="2" style="text-align:right" id="ClasseContribuicao30"  value="#{BeanSefip.setSefip.bloco30ClasseContribuicao}" onkeyup="this.value = TrimNumero( this.value )" />								 													
+		
+									
+									<h:outputLink id="bloco30Ocorrencia" value="javascript:void(0)"  style="text-decoration:none" onclick="PF('tabeladeocorrencias').show();">Ocorrencia:</h:outputLink>									
+									<p:inputText  maxlength="2" style="text-align:right" id="Ocorrencia30"  value="#{BeanSefip.setSefip.bloco30Ocorrencia}" onkeyup="this.value = TrimNumero( this.value )"/>	
+		
+									<h:outputText value="&#160;&#160;&#160;Valor Desc.:"/>
+									<p:inputText  maxlength="15" style="text-align:right" id="ValorDescontoSegurado"  value="#{BeanSefip.setSefip.bloco30ValorDescontoSegurado}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>	
+		
+									<h:outputText value="Calculo Previd:"/>
+									<p:inputText maxlength="15" style="text-align:right"  id="RemuneracaoBaseCalculoContribuicaoPrevidenciaria30"  value="#{BeanSefip.setSefip.bloco30RemuneracaoBaseCalculoContribuicaoPrevidenciaria}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>
+									
+									<h:outputText value="&#160;&#160;&#160;Base Cal.13 Prev:"/>
+									<p:inputText  maxlength="15" style="text-align:right" id="BaseCalculo13PrevidenciaSocial30"  value="#{BeanSefip.setSefip.bloco30BaseCalculo13PrevidenciaSocial}" onkeyup="mascara(this,moeda)" onchange="mascara(this,moeda)" onblur="mascara(this,moeda)"/>								
+									
+									<h:outputText value="Calc PrevGPS13:"/>
+									<p:inputText  maxlength="15" style="text-align:right" id="BaseCalculo13PrevidenciaGPSCompetencia1330"  value="#{BeanSefip.setSefip.bloco30BaseCalculo13PrevidenciaGPSCompetencia13}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+
+					            </h:panelGrid>
+					        </p:panel> 
+					        <br style="clear: left;" />
+					        <br style="clear: left;" />
+					       <p:separator />
+					        
+					        <h:panelGrid columns="4" cellpadding="0">
+				               	<br style="clear: left;" />
+								<br style="clear: left;" />
+				                <h:outputText value="MOVIMENTACAO:" />										
+								<h:selectOneMenu id="funcioMovimentacao"  valueChangeListener="#{BeanSefip.comboFuncionarioMovimentacaoSelecionado}">                  
+									<f:selectItem itemLabel="Selecione o Funcionario" itemValue="Selecione o Funcionario" selected="true" />
+									<f:selectItems value="#{BeanSefip.combofuncionarioMovimentacao}"/>  
+									<p:ajax event="change" update="RegistrodoTrabalhadorMoviment" />
+								</h:selectOneMenu>  																	     
+				            </h:panelGrid>
+				            <br style="clear: left;" />
+				            <p:panel id="RegistrodoTrabalhadorMoviment" header="32 - Registro do Trabalhador Movimento" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto32"  value="#{BeanSefip.setSefip.bloco32TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink4"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa32"  value="#{BeanSefip.setSefip.bloco32TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaoEmpresa32"  value="#{BeanSefip.setSefip.bloco32InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+		
+										
+										<h:outputLink id="openDialogLink6"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoObra').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Obra:" /></h:outputLink>
+										<p:inputText  maxlength="1" style="text-align:right" id="TipoInscricaoObra32" value="#{BeanSefip.setSefip.bloco32TipoInscricaoObra}" onkeyup="this.value = TrimNumero( this.value )"/> 
+										
+										<h:outputText value="Inscri. Obra:"/>
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaTomadorObraConstrucaoCivel32"  value="#{BeanSefip.setSefip.bloco32InscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+										
+										<h:outputText value="&#160;&#160;&#160;Pis Pase Ci:"/>
+										<p:inputText  maxlength="11" style="text-align:right" id="PisPaseCi132"  value="#{BeanSefip.setSefip.bloco32PisPaseCi}" onkeyup="this.value = TrimNumero( this.value )"/> 
+																				
+										<h:outputText value="Data Admissão:"/>  
+										<p:inputMask style="text-align:right" id="DataAdm32"  value="#{BeanSefip.setSefip.bloco32DataAdm}" mask="99/99/9999"/>
+										
+										<h:outputLink id="openDialogLinkCategoria32"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('dlg').show();"><h:outputText value="&#160;&#160;&#160;Categoria"/></h:outputLink>
+										<p:inputMask style="text-align:right" id="Categoria32"  value="#{BeanSefip.setSefip.bloco32Categoria}"  mask="99"/>
+		
+										<h:outputText value="Nome Traba.:"/>
+										<p:inputText   maxlength="70" style="text-align:right" id="NomeTrabalhador32"  value="#{BeanSefip.setSefip.bloco32NomeTrabalhador}" onkeyup="this.value = Trim( this.value )"/> 
+			
+										
+										<h:outputLink id="openDialogLink1"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('tabeladeCodigoMovimentacao').show();"><h:outputText value="&#160;&#160;&#160;Cod Movimentacao:"/></h:outputLink>
+										<p:inputText   maxlength="2" style="text-align:right" id="CodigoMovimentacao32"  value="#{BeanSefip.setSefip.bloco32CodMovimentacao}"/> 
+										
+										<h:outputText value="Data Movimentacao:"/>
+										<p:inputMask style="text-align:right" id="DataDeMovimentacao32"  value="#{BeanSefip.setSefip.bloco32DataMovimentacao}" mask="99/99/9999"/> 
+										
+										<h:outputLink id="openDialogLink2"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaIndiRecolhFGTS').show();"><h:outputText value="&#160;&#160;&#160;Indi. Recolh. FGTS:"/></h:outputLink>
+										<p:inputMask style="text-align:right" id="IndicativoDeRecolhimentoFGTS32"  value="#{BeanSefip.setSefip.bloco32IndicativoRecolhimentoFGTS}" mask="a" onkeyup="strToUpper(this)"/>
+					            
+					            </h:panelGrid>
+					        </p:panel> 
+					        
+					        
+							<br style="clear: left;" />
+					        <br style="clear: left;" />
+					       <p:separator />
+					        <p:panel id="AlteraçaoCadastralTrabalhador" header="13 - Alterao Cadastral Trabalhador" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto13"  value="#{BeanSefip.setSefip.bloco13TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink13"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa13"  value="#{BeanSefip.setSefip.bloco13TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaoEmpresa13"  value="#{BeanSefip.setSefip.bloco13InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+												
+										<h:outputText value="&#160;Pis Pase Ci:"/>
+										<p:inputText  maxlength="11" style="text-align:right" id="PisPaseCi13"  value="#{BeanSefip.setSefip.bloco13PisPaseCi}" onkeyup="this.value = TrimNumero( this.value )"/> 
+																				
+										<h:outputText value="Data Admissão:"/>  
+										<p:inputMask style="text-align:right" id="DataAdm13"  value="#{BeanSefip.setSefip.bloco13DataAdm}" mask="99/99/9999"/>
+										
+										<h:outputLink id="openDialogLink14"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('dlg').show();"><h:outputText value="&#160;Categoria"/></h:outputLink>
+										<p:inputMask style="text-align:right" id="Categoria13"  value="#{BeanSefip.setSefip.bloco13Categoria}"  mask="99"/>
+		
+										<h:outputText value="Matricula:"/>
+										<p:inputText   maxlength="70" style="text-align:right" id="MatriculaEmpregado13"  value="#{BeanSefip.setSefip.bloco13MatriculaEmpregado}" onkeyup="this.value = TrimNumero( this.value )"/> 
+													
+										<h:outputText value="&#160;Numero CTPS:"/>
+										<p:inputText  maxlength="7" style="text-align:right" id="NumeroCTPS13" value="#{BeanSefip.setSefip.bloco13NumeroCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+										
+										<h:outputText value="Serie CTPS:"/>
+										<p:inputText  maxlength="5" style="text-align:right" id="SerieCTPS13"  value="#{BeanSefip.setSefip.bloco13SerieCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+					            
+
+										<h:outputText value="&#160;Nome Traba.:"/>
+										<p:inputText  maxlength="50" style="text-align:right" id="NomeTrabalhador13"  value="#{BeanSefip.setSefip.bloco13NomeTrabalhador}" onkeyup="this.value = Trim( this.value )"/> 
+					            
+										<h:outputText value="Cod. Empr. Caixa:"/>
+										<p:inputText  maxlength="14" style="text-align:right" id="CodigoEmpresaCAIXA13"  value="#{BeanSefip.setSefip.bloco13CodigoEmpresaCAIXA}" onkeyup="this.value = TrimNumero( this.value )"/> 
+					            
+					            		<h:outputText value="&#160;Cod. Trabalha. Caixa:"/>
+										<p:inputText  maxlength="11" style="text-align:right" id="odigoTrabalhadorCAIXA13"  value="#{BeanSefip.setSefip.bloco13CodigoTrabalhadorCAIXA}" onkeyup="this.value = TrimNumero( this.value )"/>
+					            
+					            		<h:outputText value="Cod. Alte.Cadastral:"/>
+										<p:inputText  maxlength="3" style="text-align:right" id="CodigoAlteraoCadastral13"  value="#{BeanSefip.setSefip.bloco13CodigoAlteraoCadastral}" onkeyup="this.value = TrimNumero( this.value )"/>
+
+					            		<h:outputText value="&#160;Novo Conteudo Campo"/>
+										<p:inputText  maxlength="70" style="text-align:right" id="NovoConteudoDoCampo13"  value="#{BeanSefip.setSefip.bloco13NovoConteudoDoCampo}" onkeyup="this.value = Trim( this.value )"/>
+
+					            </h:panelGrid>
+					        </p:panel>						        
+					        
+					        
+ 							<br style="clear: left;" />
+					        <br style="clear: left;" />
+					       <p:separator />
+					        <p:panel id="InclusãoAlteraoEndereçodoTrabalhador" header="14 - Inclusão/Alterao Endereço do Trabalhador" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto14"  value="#{BeanSefip.setSefip.bloco14TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink7"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask   maxlength="2" style="text-align:right" id="TipoInscricaoEmpresa14"  value="#{BeanSefip.setSefip.bloco14TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaoEmpresa14"  value="#{BeanSefip.setSefip.bloco14InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+												
+										<h:outputText value="&#160;&#160;&#160;Pis Pase Ci:"/>
+										<p:inputText  maxlength="11" style="text-align:right" id="PisPaseCi14"  value="#{BeanSefip.setSefip.bloco14PisPaseCi}" onkeyup="this.value = TrimNumero( this.value )"/> 
+																				
+										<h:outputText value="Data Admissão:"/>  
+										<p:inputMask style="text-align:right" id="DataAdm14"  value="#{BeanSefip.setSefip.bloco14DataAdm}" mask="99/99/9999"/>
+										
+										<h:outputLink id="openDialogLink11"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('dlg').show();"><h:outputText value="&#160;&#160;&#160;Categoria"/></h:outputLink>
+										<p:inputMask style="text-align:right" id="Categoria14"  value="#{BeanSefip.setSefip.bloco14Categoria}"  mask="99"/>
+		
+										<h:outputText value="Nome Traba.:"/>
+										<p:inputText   maxlength="70" style="text-align:right" id="NomeTrabalhador14"  value="#{BeanSefip.setSefip.bloco14NomeTrabalhador}" onkeyup="this.value = Trim( this.value )"/> 
+													
+										<h:outputText value="&#160;&#160;&#160;Numero CTPS:"/>
+										<p:inputText  maxlength="7" style="text-align:right" id="NumeroCTPS14" value="#{BeanSefip.setSefip.bloco14NumeroCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+										
+										<h:outputText value="Serie CTPS:"/>
+										<p:inputText  maxlength="5" style="text-align:right" id="SerieCTPS14"  value="#{BeanSefip.setSefip.bloco14SerieCTPS}" onkeyup="this.value = TrimNumero( this.value )"/> 
+					            
+
+										<h:outputText value="&#160;&#160;&#160;Logradouro:"/>
+										<p:inputText  maxlength="50" style="text-align:right" id="Logradouro14"  value="#{BeanSefip.setSefip.bloco14Logradouro}" onkeyup="this.value = Trim( this.value )"/> 
+					            
+										<h:outputText value="Bairro:"/>
+										<p:inputText  maxlength="20" style="text-align:right" id="Bairro14"  value="#{BeanSefip.setSefip.bloco14Bairro}" onkeyup="this.value = Trim( this.value )" /> 
+					            
+					            		<h:outputText value="&#160;&#160;&#160;CEP:"/>
+										<p:inputMask style="text-align:right" id="CEP14"  value="#{BeanSefip.setSefip.bloco14CEP}" mask="99999-999"/>
+										
+					            
+					            
+					            		<h:outputText value="Cidade:"/>
+										<p:inputText  maxlength="20" style="text-align:right" id="Cidade14"  value="#{BeanSefip.setSefip.bloco14Cidade}" onkeyup="this.value = Trim( this.value )"/>
+
+					            		<h:outputText value="&#160;&#160;&#160;UF"/>
+										<p:inputMask  maxlength="2" style="text-align:right" id="UF14"  value="#{BeanSefip.setSefip.bloco14UF}"  onkeyup="strToUpper(this)"/>
+
+					            </h:panelGrid>
+					        </p:panel> 	
+					        
+
+											        
+					        				        
+					        
+				        </p:tab>
+				        <p:tab title="20/21 - Serviço/Obra">
+					        
+					        <h:panelGrid columns="4" cellpadding="0">
+				               	<br style="clear: left;" />
+								<br style="clear: left;" />
+				                <h:outputText value="TOMADOR OBRA:" />										
+								<h:selectOneMenu id="registroTomadorServico"  valueChangeListener="#{BeanSefip.comboTomadordeObraSelecionado}">                  
+									<f:selectItem itemLabel="Incluir Nova Obra" itemValue="Incluir Nova Obra" selected="true" />
+									<f:selectItems value="#{BeanSefip.carregaComboBloco20TomadorServicoObra}"/>  
+									<p:ajax event="change" update="RegistrodoTomadorServico,RegistroAdicionaisTomadorServiObra" />
+								</h:selectOneMenu>  																	     
+				            </h:panelGrid>
+				            
+				            <br style="clear: left;" />
+				          
+				            <p:panel id="RegistrodoTomadorServico" header="20 - Registro do Tomador de Serviço/Obra de Construo Civil" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto20"  value="#{BeanSefip.setSefip.bloco20TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink205"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa20"  value="#{BeanSefip.setSefip.bloco20TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="TipoDaEmpresa20"  value="#{BeanSefip.setSefip.bloco20TipoDaEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+		
+										
+										<h:outputLink id="openDialogLink201"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoObra').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Obra:" /></h:outputLink>
+										<p:inputText  maxlength="1" style="text-align:right" id="TipoInscricaTomadorObraConstrucaoCivel20" value="#{BeanSefip.setSefip.bloco20TipoInscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/> 
+										
+										<h:outputText value="Inscri. Obra:"/>
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaTomadorObraConstrucaoCivel20"  value="#{BeanSefip.setSefip.bloco20InscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+										
+										
+										<h:outputText value="&#160;&#160;&#160;Nome Tomador:"/>
+										<p:inputText  maxlength="40" style="text-align:right" id="NomeTomadorObraConstCivil20"  value="#{BeanSefip.setSefip.bloco20NomeTomadorObraConstCivil}" onkeyup="this.value = Trim( this.value );strToUpper(this)" />  																								
+										
+										<h:outputText value="Logradouro:"/>
+										<p:inputText  maxlength="50" style="text-align:right" id="Logradouro20"  value="#{BeanSefip.setSefip.bloco20Logradouro}" onkeyup="this.value = Trim( this.value )"/> 
+										
+										
+										<h:outputText value="&#160;&#160;&#160;Bairro:"/>
+										<p:inputText  maxlength="20" style="text-align:right" id="Bairro20"  value="#{BeanSefip.setSefip.bloco20Bairro}" onkeyup="this.value = Trim( this.value )"/> 
+					            
+					            		<h:outputText value="CEP:"/>
+										<p:inputMask style="text-align:right" id="CEP20"  value="#{BeanSefip.setSefip.bloco20CEP}" mask="99999-999"/>
+					            
+					            		<h:outputText value="&#160;&#160;&#160;Cidade:"/>
+										<p:inputText  maxlength="20" style="text-align:right" id="Cidade20"  value="#{BeanSefip.setSefip.bloco20Cidade}" onkeyup="this.value = Trim( this.value )"/>
+
+					            		<h:outputText value="UF"/>
+										<p:inputMask  maxlength="2" style="text-align:right" id="UF20"  value="#{BeanSefip.setSefip.bloco20UF}"  onkeyup="strToUpper(this)"/>
+
+										<h:outputText value="&#160;&#160;&#160;Cod Pgto GPS:" />
+										<p:inputText  maxlength="4" style="text-align:right" id="CodPgtoGPS20"  value="#{BeanSefip.setSefip.bloco20CodPgtoGPS}" onkeyup="this.value = TrimNumero( this.value )"/>  
+										
+										<h:outputText value="Salario Familia:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="SalarioFamilia20"  value="#{BeanSefip.setSefip.bloco20SalarioFamilia}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+										<h:outputText value="&#160;&#160;&#160;Desc. Empregado:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="ContribDescEmpregadoRefercompetncia1320"  value="#{BeanSefip.setSefip.bloco20ContribDescEmpregadoRefercompetncia13}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+
+										<h:outputLink id="openDialogLink40"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaIndiPositNegat').show();"><h:outputText value="Indi. Posit/Negat."/></h:outputLink>	 
+										<p:inputText  maxlength="1" style="text-align:right" id="IndicadorValorNegativoPositivo20"  value="#{BeanSefip.setSefip.bloco20IndicadorValorNegativoPositivo}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+										
+										<h:outputText value="&#160;&#160;&#160;Valor Dev. Compet 13:"/>
+										<p:inputText  maxlength="14" style="text-align:right" id="ValorDevidoPrevidnciaSocialReferenteCompetncia20"  value="#{BeanSefip.setSefip.bloco20ValorDevidoPrevidnciaSocialReferenteCompetncia}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+										<h:outputText value="Valor Reteno:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="bloco20ValordeRetencao20"  value="#{BeanSefip.setSefip.bloco20ValordeRetencao}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+
+										<h:outputText value="&#160;&#160;&#160;Valor Fatura Serv:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="ValordasfaturasEmitidasParaTomador20"  value="#{BeanSefip.setSefip.bloco20ValordasfaturasEmitidasParaTomador}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+										
+					            </h:panelGrid>
+					        </p:panel>
+					        
+					    	<br style="clear: left;" />
+					       <br style="clear: left;" />
+					       <p:separator />
+					       
+								<p:panel id="RegistroAdicionaisTomadorServiObra" header="21 - Registro Adicionais do Tomador de Serviço/Obra de Const. Civil" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto21"  value="#{BeanSefip.setSefip.bloco21Ti3poRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink2051"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Insc. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa21"  value="#{BeanSefip.setSefip.bloco21TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaoEmpresa21"  value="#{BeanSefip.setSefip.bloco21InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+		
+										
+										<h:outputLink id="openDialogLink2021"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoObra').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Obra:" /></h:outputLink>
+										<p:inputText  maxlength="1" style="text-align:right" id="TipoInscricaTomadorObraConstrucaoCivel21" value="#{BeanSefip.setSefip.bloco21TipoInscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/> 
+										
+										<h:outputText value="Inscri. Obra:"/>
+										<p:inputText  maxlength="14" style="text-align:right" id="InscricaTomadorObraConstrucaoCivel21"  value="#{BeanSefip.setSefip.bloco21InscricaTomadorObraConstrucaoCivel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+										
+										
+										<h:outputText value="&#160;&#160;&#160;Valor Corrigido:"/>
+										<p:inputText  maxlength="40" style="text-align:right" id="CompensacaoValorCorrigido21"  value="#{BeanSefip.setSefip.bloco21CompensacaoValorCorrigido}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)" />  																								
+										
+										<h:outputText value=" Comp. Periodo Inicio"/> 
+										<p:inputMask style="text-align:right" id="CompensacaoPeriodoInicio21"  value="#{BeanSefip.setSefip.bloco21CompensacaoPeriodoInicio}" mask="99/99/99"/>
+										
+										<h:outputText value="&#160;&#160;&#160;Comp. Periodo Fim:"/> 
+					            		<p:inputMask style="text-align:right" id="CompensacaoPeriodoFim21"  value="#{BeanSefip.setSefip.bloco21CompensacaoPeriodoFim}" mask="99/99/99"/>
+					            
+					            		<h:outputText value="Recol.Ante. Inss"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciasAnterioresValorInss21"  value="#{BeanSefip.setSefip.bloco21RecolhimentoCompetenciasAnterioresValorInss}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>
+					            
+					            		<h:outputText value="&#160;&#160;&#160;Recolhi. Outras:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciasAnterioresOutrasEntidades21"  value="#{BeanSefip.setSefip.bloco21RecolhimentoCompetenciasAnterioresOutrasEntidades}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>
+
+					            		<h:outputText value="Parc.FGTS 1,2,3,5,6:"/>
+										<p:inputMask  maxlength="15" style="text-align:right" id="ParcelamentoFGTScategorias0102030506"  value="#{BeanSefip.setSefip.bloco21ParcelamentoFGTScategorias0102030506}"  onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>
+
+										<h:outputText value="&#160;&#160;&#160;Parc.FGTS Cat 4,7:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ParcelamentoFGTScategorias040721"  value="#{BeanSefip.setSefip.bloco21ParcelamentoFGTScategorias0407}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+										
+										<h:outputText value="Parc.FGTS Recolhido:"/>
+										<p:inputText  maxlength="15" style="text-align:right" id="ParcelamentoFGTSvalorrecolhido21"  value="#{BeanSefip.setSefip.bloco21ParcelamentoFGTSvalorrecolhido}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"  />								
+
+					            </h:panelGrid>
+					        </p:panel>
+					       
+
+				            
+				        </p:tab>				        				    
+				        <p:tab title="10/12 - Empresa">
+							<p:panel id="RegistrodoInformacoesdaEmpresa" header="10 - Registro Informações da Empresa" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto10"  value="#{BeanSefip.setSefip.bloco10TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink20510"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa10"  value="#{BeanSefip.setSefip.bloco10TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="TipoDaEmpresa10"  value="#{BeanSefip.setSefip.bloco10InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+		
+										<h:outputText value="&#160;&#160;&#160;Razão Social:" />
+										<p:inputText  maxlength="40" style="text-align:right" id="NomeEmpresaRazaoSocial10"  value="#{BeanSefip.setSefip.bloco10NomeEmpresaRazaoSocial}" onkeyup="this.value = Trim( this.value );strToUpper(this)" />  
+										
+										<h:outputText value="Logradouro:" />
+										<p:inputText  maxlength="50" style="text-align:right" id="Logradouro10"  value="#{BeanSefip.setSefip.bloco10Logradouro}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Bairro:" />
+										<p:inputText  maxlength="20" style="text-align:right" id="Bairro10"  value="#{BeanSefip.setSefip.bloco10Bairro}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="CEP:" />  
+										<p:inputMask style="text-align:right" id="CEP10"  value="#{BeanSefip.setSefip.bloco10CEP}" mask="99999-999"/>
+
+										<h:outputText value="&#160;&#160;&#160;Cidade" />
+										<p:inputText  maxlength="20" style="text-align:right" id="Cidade10"  value="#{BeanSefip.setSefip.bloco10Cidade}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="UF:" />
+										<p:inputText  maxlength="2" style="text-align:right" id="UF10"  value="#{BeanSefip.setSefip.bloco10UF}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Telefone:" />
+										<p:inputMask id="Telefone10" style="text-align:right" value="#{BeanSefip.setSefip.bloco10Telefone}" mask="(99) 9999-9999"/>
+
+										<h:outputText value="Indi. Alteracao End:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="IndicadorAlteracaoEndereco10"  value="#{BeanSefip.setSefip.bloco10IndicadorAlteracaoEndereco}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;CNAE:" />
+										<p:inputText  maxlength="7" style="text-align:right" id="CNAE10"  value="#{BeanSefip.setSefip.bloco10CNAE}" onkeyup="this.value = TrimNumero( this.value )" />  
+
+										<h:outputText value="Indi. Alte. CNAE:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="indicadorAlteracaoCNAE10"  value="#{BeanSefip.setSefip.bloco10indicadorAlteracaoCNAE}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Aliquota RAT" />
+										<p:inputText  maxlength="2" style="text-align:right" id="AliquotaRAT10"  value="#{BeanSefip.setSefip.bloco10AliquotaRAT}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="Cod Centralizacao:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="CodigoCentralizacao10"  value="#{BeanSefip.setSefip.bloco10CodigoCentralizacao}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Simples:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="Simples10"  value="#{BeanSefip.setSefip.bloco10Simples}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="FPAS" />
+										<p:inputText  maxlength="3" style="text-align:right" id="FPAS10"  value="#{BeanSefip.setSefip.bloco10FPAS}" onkeyup="this.value = TrimNumero( this.value )" />  
+
+										
+										<h:outputLink id="openDialogLink510"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaCodigoRecolhimento').show();"><h:outputText value="&#160;&#160;&#160;Cod.Outr Entidades" /></h:outputLink>
+										<p:inputText  maxlength="4" style="text-align:right" id="CodigoOutroasEntidades10"  value="#{BeanSefip.setSefip.bloco10CodigoOutroasEntidades}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="Codigo Pgto GPS:" />
+										<p:inputText  maxlength="4" style="text-align:right" id="CodigoPgtoGPS10"  value="#{BeanSefip.setSefip.bloco10CodigoPgtoGPS}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="&#160;&#160;&#160;% Insen Filantropica:" />
+										<p:inputText  maxlength="5" style="text-align:right" id="PercentualInsencaoFilantropica10"  value="#{BeanSefip.setSefip.bloco10PercentualInsencaoFilantropica}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="Salario Familia:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="SalarioFamilia10"  value="#{BeanSefip.setSefip.bloco10SalarioFamilia}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Salario Materni:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="SalarioMaternidade10"  value="#{BeanSefip.setSefip.bloco10SalarioMaternidade}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="DescEmp Comp13:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ContribDescEmpregadoReferentaCompetencia1310"  value=" #{BeanSefip.setSefip.bloco10ContribDescEmpregadoReferentaCompetencia13}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Indi.R$ Nega/Posi:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="IndicadorValorNegativoPositivo10"  value="#{BeanSefip.setSefip.bloco10IndicadorValorNegativoPositivo}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="Dev PrevCom13:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="ValorDevidoPrevidnciaSocialReferenteComp1310"  value="#{BeanSefip.setSefip.bloco10ValorDevidoPrevidnciaSocialReferenteComp13}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Banco:" />
+										<p:inputText  maxlength="3" style="text-align:right" id="Banco10"  value="#{BeanSefip.setSefip.bloco10Banco}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="Agencia:" />
+										<p:inputText  maxlength="4" style="text-align:right" id="Agencia10"  value="#{BeanSefip.setSefip.bloco10Agencia}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>
+										
+										<h:outputText value="&#160;&#160;&#160;Conta Corrente:" />
+										<p:inputText  maxlength="9" style="text-align:right" id="ContaCorrente10"  value="#{BeanSefip.setSefip.bloco10ContaCorrente}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/> 										
+																	
+					            </h:panelGrid>
+					        </p:panel>
+					        
+					    	 <br style="clear: left;" />
+					      	 <br style="clear: left;" />
+					       	 <p:separator />
+					       	 
+							<p:panel id="RegistrodoInformacoesAdicionaisdoRecolhimentodaEmpresa" header="12 – Informações Adicionais do Recolhimento da Empresa" toggleable="true" toggleOrientation="horizontal">
+					            <h:panelGrid columns="4" cellpadding="0">
+										<h:outputText value="Tipo Registo:" />
+										<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto12"  value="#{BeanSefip.setSefip.bloco12TipoRegisto}" /> 
+									
+										<h:outputLink id="openDialogLink20512"  style="text-decoration:none" value="javascript:void(0)" onclick="PF('TabelaTipoInscricaoEmpresa').show();"><h:outputText value="&#160;&#160;&#160;Tipo Inscri. Empresa:" /></h:outputLink>									
+										<p:inputMask 	style="text-align:right" id="TipoInscricaoEmpresa12"  value="#{BeanSefip.setSefip.bloco12TipoInscricaoEmpresa}" mask="9"/>									
+									
+										<h:outputText value="Inscricao Empresa:" />
+										<p:inputText  maxlength="14" style="text-align:right" id="TipoDaEmpresa12"  value="#{BeanSefip.setSefip.bloco12InscricaoEmpresa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+		
+
+										<h:outputText value="&#160;&#160;&#160;Ded.13 Sal. Mater:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="Deducao13SalarioMaternidade12"  value="#{BeanSefip.setSefip.bloco12Deducao13SalarioMaternidade}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="Even Despo Patroci:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ReceitaEventoDesportivoPatrocinio12"  value="#{BeanSefip.setSefip.bloco12ReceitaEventoDesportivoPatrocinio}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Indi Orig Receita:" />
+										<p:inputText  maxlength="1" style="text-align:right" id="IndicativoOrigemReceita12"  value="#{BeanSefip.setSefip.bloco12IndicativoOrigemReceita}"/>  
+
+										<h:outputText value="Comerci. Prod PF:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ComercializacaoProducaoPF12"  value="#{BeanSefip.setSefip.bloco12ComercializacaoProducaoPF}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Comerci. Prod PJ:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ComercializacaoProducaoPJ12"  value="#{BeanSefip.setSefip.bloco12ComercializacaoProducaoPJ}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="Out Inf Processo:" />
+										<p:inputText  maxlength="10" style="text-align:right" id="OutroasInformacoesProcesso12"  value="#{BeanSefip.setSefip.bloco12OutroasInformacoesProcesso}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Out Inf Proce Ano:" />
+										<p:inputMask style="text-align:right" id="OutroasInformacoesProcessoAno12"  value="#{BeanSefip.setSefip.bloco12OutroasInformacoesProcessoAno}" mask="9999"/>
+
+
+										<h:outputText value="Out Inf Vara JCJ:" />
+										<p:inputText  maxlength="5" style="text-align:right" id="OutroasInformacoesVaraJCJ12"  value="#{BeanSefip.setSefip.bloco12OutroasInformacoesVaraJCJ}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+										<h:outputText value="&#160;&#160;&#160;Out Infor. Ini:" />
+										<p:inputMask style="text-align:right" id="OutroasInformacoesPeriodoIni12"  value="#{BeanSefip.setSefip.bloco12OutroasInformacoesPeriodoIni}" mask="9999/99"/>										
+										  
+
+
+										<h:outputText value="Out Infor. Fim:" />
+										<p:inputMask style="text-align:right" id="OutroasInformacoesPeriodoFIm12"  value="#{BeanSefip.setSefip.bloco12OutroasInformacoesPeriodoFIm}" mask="9999/99"/>												
+  
+
+										<h:outputText value="&#160;&#160;&#160;Comp. Val.Corrigido:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="CompensacaoValorCorrigido12"  value="#{BeanSefip.setSefip.bloco12CompensacaoValorCorrigido}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/>  
+
+										<h:outputText value="Comp Peri. Inicio:" />
+										<p:inputMask style="text-align:right" id="CompensacaoPeriodoInicio12"  value="#{BeanSefip.setSefip.bloco12CompensacaoPeriodoInicio}" mask="99/99/99"/>
+										
+
+										<h:outputText value="&#160;&#160;&#160;Comp Peri. Fim" />
+										<p:inputMask style="text-align:right" id="CompensacaoPeriodoFim12"  value="#{BeanSefip.setSefip.bloco12CompensacaoPeriodoFim}" mask="99/99/99"/>
+
+										<h:outputText value="Recol. INSS Folha" />
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciaAnteriorValorINSSSobreFolha12"  value="#{BeanSefip.setSefip.bloco12RecolhimentoCompetenciaAnteriorValorINSSSobreFolha}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+										
+										<h:outputText value="&#160;&#160;&#160;Recol Comp. Entid" />
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciaAnteriorOutasEntidades12"  value="#{BeanSefip.setSefip.bloco12RecolhimentoCompetenciaAnteriorOutasEntidades}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+										
+										<h:outputText value="Recol Prod INSS:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciaAnteriorComercializacaoProducaoINSS12"  value="#{BeanSefip.setSefip.bloco12RecolhimentoCompetenciaAnteriorComercializacaoProducaoINSS}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+						
+						
+										<h:outputText value="&#160;&#160;&#160;Recol Prod Entid:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciaAnteriorComercializacaoProducaoOutrasEntidades12"  value="#{BeanSefip.setSefip.bloco12RecolhimentoCompetenciaAnteriorComercializacaoProducaoOutrasEntidades}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+										
+										<h:outputText value="Recol.Rec Despot:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="RecolhimentoCompetenciaAnteriorReceitaDespotiva12"  value="#{BeanSefip.setSefip.bloco12RecolhimentoCompetenciaAnteriorReceitaDespotiva}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+										
+										
+										<h:outputText value="&#160;&#160;&#160;Parc.FGTS C.12356:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ParcelamentoFGTSSomatorioCategoria010203050612"  value="#{BeanSefip.setSefip.bloco12ParcelamentoFGTSSomatorioCategoria0102030506}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 
+										
+										
+										<h:outputText value="Parc.FGTS Cat 47:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ParcelamentoFGTSSomatorioCategoria040712"  value="#{BeanSefip.setSefip.bloco12ParcelamentoFGTSSomatorioCategoria0407}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 																																				
+						
+										<h:outputText value="&#160;&#160;&#160;Parc.FGTS Recol:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="bloco12ParcelamentoFGTSValorRecolhido12"  value="#{BeanSefip.setSefip.bloco12ParcelamentoFGTSValorRecolhido}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 																																				
+
+
+										<h:outputText value="Val PGTO Cooperat:" />
+										<p:inputText  maxlength="15" style="text-align:right" id="ValoresPGTOCooperativas12"  value="#{BeanSefip.setSefip.bloco12ValoresPGTOCooperativas}" onkeyup="mascara(this,moeda)" onblur="mascara(this,moeda)"/> 																																				
+
+					            </h:panelGrid>
+					        </p:panel>					       	 
+					       	 
+				        </p:tab>
+				        <p:tab title="00 - Responsável">
+				            <h:panelGrid columns="4" cellpadding="10">
+								<p:panel id="RegistrodoInformacoesdoResponsavel" header="00 - Registro Informações do Responsável" toggleable="true" toggleOrientation="horizontal">
+						            <h:panelGrid columns="4" cellpadding="0">
+											<h:outputText value="Tipo Registo:" />
+											<p:inputText  maxlength="2" disabled="true" style="text-align:right" id="TipoRegisto00"  value="#{BeanSefip.setSefip.bloco00TipoRegisto}" /> 
+																				
+											<h:outputText value="&#160;&#160;&#160;Tipo Remessa:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="TipodeRemessa00"  value="#{BeanSefip.setSefip.bloco00TipodeRemessa}" onkeyup="this.value = TrimNumero( this.value )"/>  
+			
+
+											<h:outputText value="Tipo Inscricao:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="TipodeInscricaoResponsavel00"  value="#{BeanSefip.setSefip.bloco00TipodeInscricaoResponsavel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+
+											<h:outputText value="&#160;&#160;&#160;Inscri Respons:" />
+											<p:inputText  maxlength="14" style="text-align:right" id="InscricaoResponsavel00"  value="#{BeanSefip.setSefip.bloco00InscricaoResponsavel}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Razao Social:" />
+											<p:inputText  maxlength="30" style="text-align:right" id="RazaoSocial00"  value="#{BeanSefip.setSefip.bloco00RazaoSocial}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Nome Contato:" />
+											<p:inputText  maxlength="20" style="text-align:right" id="NomePessoaContato00"  value="#{BeanSefip.setSefip.bloco00NomePessoaContato}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="Logradouro:" />
+											<p:inputText  maxlength="50" style="text-align:right" id="Logradouro00"  value="#{BeanSefip.setSefip.bloco00Logradouro}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Bairro:" />
+											<p:inputText  maxlength="20" style="text-align:right" id="Bairro00"  value="#{BeanSefip.setSefip.bloco00Bairro}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="CEP:" />
+											<p:inputMask style="text-align:right" id="Cep00"  value="#{BeanSefip.setSefip.bloco00Cep}" mask="99999-999"/>  
+
+
+											<h:outputText value="&#160;&#160;&#160;Cidade:" />
+											<p:inputText  maxlength="20" style="text-align:right" id="Cidade00"  value="#{BeanSefip.setSefip.bloco00Cidade}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="UF:" />
+											<p:inputText  maxlength="2" style="text-align:right" id="UF00"  value="#{BeanSefip.setSefip.bloco00UF}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Telefone:" />
+											<p:inputText  maxlength="12" style="text-align:right" id="Telefone00"  value="#{BeanSefip.setSefip.bloco00TelefoneInternetContato}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Email:" />
+											<p:inputText  maxlength="60" style="text-align:right" id="EnderecoInternetContato00"  value="#{BeanSefip.setSefip.bloco00EnderecoInternetContato}" onkeyup="this.value = Trim( this.value );strToUpper(this)"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Competencia:" />
+											<p:inputText  maxlength="6" style="text-align:right" id="Competencia00"  value="#{BeanSefip.setSefip.bloco00Competencia}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Cod Recolhimento:" />
+											<p:inputText  maxlength="3" style="text-align:right" id="CodRecolhimento00"  value="#{BeanSefip.setSefip.bloco00CodRecolhimento}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Ind Reco FGTS:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="IndicadorDeRecolhimentoFGTS00"  value="#{BeanSefip.setSefip.bloco00IndicadorDeRecolhimentoFGTS}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Modal Arquivo:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="ModalidadeArquivo00"  value="#{BeanSefip.setSefip.bloco00ModalidadeArquivo}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Data Rec FGTS:" />
+											<p:inputMask style="text-align:right" id="DataDeRecolhimentoDoFGTS00"  value="#{BeanSefip.setSefip.bloco00DataDeRecolhimentoDoFGTS}" mask="99/99/9999"/>  
+
+											<h:outputText value="Ind Rec PrevSoci:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="IndicadorRecolhimenetoPrevidenciaSocial00"  value="#{BeanSefip.setSefip.bloco00IndicadorRecolhimenetoPrevidenciaSocial}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Dat Rec PrevSoc:" />
+											<p:inputText  maxlength="8" style="text-align:right" id="DataDeRecolhimentoDaPrevidenciaSocial00"  value="#{BeanSefip.setSefip.bloco00DataDeRecolhimentoDaPrevidenciaSocial}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Ind Rec Atr PrevSoci:" />
+											<p:inputText  maxlength="7" style="text-align:right" id="IndiceRecolhimentAtrasoPrevidenciaSocial00"  value="#{BeanSefip.setSefip.bloco00IndiceRecolhimentAtrasoPrevidenciaSocial}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="&#160;&#160;&#160;Tipo Insc Fornec:" />
+											<p:inputText  maxlength="1" style="text-align:right" id="TipoInscricaoFornecedor00"  value="#{BeanSefip.setSefip.bloco00TipoInscricaoFornecedor}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+											<h:outputText value="Ins Fornec F.PGTO:" />
+											<p:inputText  maxlength="14" style="text-align:right" id="InscrioDoFornecedorFolhaDePagamento00"  value="#{BeanSefip.setSefip.bloco00InscrioDoFornecedorFolhaDePagamento}" onkeyup="this.value = TrimNumero( this.value )"/>  
+
+			
+						            </h:panelGrid>
+					        	</p:panel>
+
+				            </h:panelGrid>
+				        </p:tab>
+ 	
+				    </p:tabView>
+				    
+				    <br style="clear: left;" />
+					<br style="clear: left;" />
+					<p:outputPanel  style="width: 100%; text-align:center" layout="block">
+ 						<p:commandButton  value=" - EXPORTAR - " id="export" actionListener="#{BeanSefip.load}" ajax="false"/>
+					</p:outputPanel>
+					
+				</h:form>
+		   </p:layoutUnit>
+		   
+
+			
+	</p:layout>
+	
+
+	
+	
+	<p:growl id="growl" sticky="true" showDetail="true"  />
+		<p:dialog id="picture" widgetVar="dlg" header="Tabela de Categorias de Trabalhador" resizable="false" showEffect="clip" hideEffect="clip" >
+		<p:ajax event="close" update="growl"  />
+		<p:ajax event="move" update="growl" />										   
+			01 - Empregado.<br></br>
+			02 -  Trabalhador avulso.<br></br>
+			03 -  Trabalhador não vinculado ao RGPS, mas com direito ao FGTS.<br></br>
+			04 -  Empregado sob contrato de trabalho por prazo determinado - Lei n° 9.601/98, Medida Provisória n° 2.164-41<br></br>
+			05 -  Contribuinte individual - Diretor não empregado com FGTS – Lei nº 8.036/90, art. 16.<br></br>
+			06 -  Empregado Doméstico.<br></br>
+			07 -  Menor aprendiz - Lei n°10.097/2000.<br></br>
+			11 -  Contribuinte Individual - Diretor não empregado e demais empresários sem FGTS.<br></br>
+			12 -  Demais Agentes Públicos.<br></br>
+			13 -  Contri. indivi. – Trabalhador autônomo, inclusive o operador de máquina,trabalhador associado à cooper. de produo.<br></br>
+			14 -  Contri. indivi. – Trabalhador autônomo, inclusive o operador de máquina, com contribuio sobre salário-base.<br></br>
+			15 -  Contri. indivi. – Transportador autônomo, com contribuio sobre remunerao.<br></br>
+			16 -  Contri. indivi. – Transportador autônomo, com contribuio sobre salário-base.<br></br>
+			17 -  Contri. indivi. – Cooperado que presta serviços a empresas contratantes da cooperativa de trabalho.<br></br>
+			18 -  Contri. indivi. – Transportador cooperado que presta serviços a empresas contratantes da cooperativa de trabalho.<br></br>
+			19 -  Agente Político.<br></br>
+			20 -  Servidor Público ocupante, exclusivamente, de cargo em comissão e, Servidor Público ocupante de cargo temporário.<br></br>
+			21 -  Servidor Público titular de cargo efetivo, magistrado, membro do Ministério Público e do Tribunal e Conselho de Contas.<br></br>
+			22 -  Contri. indivi. – contratado por outro contribuinte individual por produtor rural pessoa física ou por missão diplomática<br></br>
+			23 -  Contri. indivi. – transportador autônomo, equiparado à empresa ou por produtor rural pessoa física ou por missão diplomática<br></br>
+			24 -  Contri. indivi. – Cooperado que presta serviços a entidade beneficente de assistncia social isenta da cota patronal.<br></br>
+			25 -  Contri. indivi. –  Transp. cooperado entidade benef. de assistncia social isenta da cota patronal ou P. física<br></br>
+			26 -  Dirigente sindical, pago pelo sindi,; magistrado Justiça do Traba.; magistrado Eleitor., a qualidade de seg empregado (sem FGTS).<br></br>	        
+		</p:dialog>
+									    
+		<p:dialog id="tabeladeocorrencias" widgetVar="tabeladeocorrencias" header="Tabela de Ocorrncias" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl"  />
+		<p:ajax event="move" update="growl" />										   
+			Para os trabalhadores com apenas um vínculo empregatício (ou uma fonte pagadora) informar os códigos abaixo, conforme o caso:<br></br>
+												
+			Ø1 - Não exposio a agente nocivo<br></br>
+			Ø2 - Exposio a agente nocivo (aposentadoria especial aos 15 anos de trabalho)<br></br>
+			Ø3 - Exposio a agente nocivo (aposentadoria especial 20 anos de trabalho)<br></br>
+			Ø4 - Exposio a agente nocivo (aposentadoria especial 25 anos de trabalho)<br></br>
+			<br></br><br></br>
+			NOTA: Não deverão preencher este campo as empresas cujas atividades não exponham seus empregados a agentes nocivos. <br></br>
+			O código 1 somente será utilizado para o empregado que esteve e deixou de estar exposto a agente nocivo.<br></br>
+			Para os trabalhadores com mais de um vínculo empregatício (ou fonte pagadora), informar os códigos abaixo:<br></br>
+			<br></br>
+			Ø5 - Mais de um vínculo empregatício/fonte pagadora) - Não exposio a agente nocivo<br></br>
+			Ø6 - Mais de um vínculo empregatício/fonte pagadora) - Exposio a agente nocivo (aposentadoria especial aos 15 anos de trabalho)<br></br>
+			Ø7 - Mais de um vínculo empregatício/fonte pagadora) - Exposio a agente nocivo (aposentadoria especial aos 20 anos de trabalho)<br></br>
+			Ø8 - Mais de um vínculo empregatício/fonte pagadora) - Exposio a agente nocivo (aposentadoria especial aos 25 anos de trabalho)<br></br>
+		</p:dialog>	
+	
+		<p:dialog style="font-size: 13px;" id="tabeladeCodigoMovimentacao" widgetVar="tabeladeCodigoMovimentacao" header="Tabela de Ocorrncias" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			H - Rescisão, com justa causa, por iniciativa do empregador.<br></br>
+			I1 - Rescisão, sem justa causa, por iniciativa do empregador.<br></br>
+			I2 - Rescisão por culpa recíproca ou força maior.<br></br>
+			I3 -  Rescisão por término do contrato a termo.<br></br>
+			I4 -  Rescisão, sem justa causa, do contrato de trabalho do empregado doméstico, por iniciativa do empregador .<br></br>
+			J -  Rescisão do contrato de trabalho por iniciativa do empregado.<br></br>
+			K -  Rescisão a pedido do empregado ou por iniciativa do empregador, com justa causa, no caso de empregado não optante, com menos de um ano de serviço.<br></br>
+			L -  Outros motivos de rescisão do contrato de trabalho.<br></br>
+			M -  Mudança de regime estatutário.<br></br>
+			N1 -  Transferncia do empregado para outro estabelecimento da mesma empresa.<br></br>
+			N2 -  Transferncia do empregado para outra empresa que tenha assumido os encargos trabalhistas, sem que tenha havido rescisão de contrato de trabalho.<br></br>
+			N3 -  Empregado proveniente de transferncia de outro estabelecimento da mesma empresa ou de outra empresa, sem rescisão do contrato de trabalho.<br></br>
+			O1 -  Afastamento temporário por motivo de acidente do trabalho, por período superior a 15 dias.<br></br>
+			O2 -  Novo afastamento temporário em decorrncia do mesmo acidente do trabalho.<br></br>
+			O3 -  Afastamento temporário por motivo de acidente do trabalho, por período igual ou inferior a 15 dias.<br></br>
+			P1 -  Afastamento temporário por motivo de doença, por período superior a 15 dias.<br></br>
+			P2 -  Novo afastamento temporário em decorrncia da mesma doença, dentro de 60 dias contados da cessao do afastamento anterior.<br></br>
+			P3 -  Afastamento temporário por motivo de doença, por período igual ou inferior a 15 dias.<br></br>
+			Q1 -  Afastamento temporário por motivo de licença-maternidade (120 dias).<br></br>
+			Q2 -  Prorrogao do afastamento temporário por motivo de licença-maternidade.<br></br>
+			Q3 -  Afastamento temporário por motivo de aborto não criminoso.<br></br>
+			Q4 -  Afastamento temporário por motivo de licença-maternidade decorrente de adoo ou guarda judicial de criança até (um) ano de idade (120 dias).<br></br>
+			Q5 -  Afastamento temporário por motivo de licença-maternidade decorrente de adoo ou guarda judicial de criança a partir de 1(um) ano até 4(quatro) anos de idade (60
+			dias).<br></br>
+			Q6 -  Afastamento temporário por motivo de licença-maternidade decorrente de adoo ou guarda judicial de criança de 4 (quatro) até 8 (oito) anos de idade (30 dias).<br></br>
+			R -  Afastamento temporário para prestar serviço militar.<br></br>
+			S2 -  Falecimento.<br></br>
+			S3 -  Falecimento motivado por acidente do trabalho.<br></br>
+			U1 -  Aposentadoria.<br></br>
+			U3 -  Aposentadoria por invalidez.<br></br>
+			V3 -  Remunerao de comissão e/ou percentagens devidas após a extino de contrato de trabalho.<br></br>
+			W -  Afastamento temporário para exercício de mandato sindical.<br></br>
+			X -  Licença sem vencimentos.<br></br>
+			Y -  Outros motivos de afastamento temporário.<br></br>
+			Z1 -  Retorno de afastamento temporário por motivo de licença-maternidade;<br></br>
+			Z2 -  Retorno de afastamento temporário por motivo de acidente do trabalho;<br></br>
+			Z3 -  Retorno de novo afastamento temporário em decorrncia do mesmo acidente do trabalho.<br></br>
+			Z4 -  Retorno de afastamento temporário por motivo de prestao de serviço militar.<br></br>
+			Z5 -  Outros retornos de afastamento temporário e/ou licença.<br></br>
+			Z6 -  Retorno de afastamento temporário por motivo de acidente do trabalho, por período igual ou inferior a 15 dias.<br></br>
+		</p:dialog>	
+		
+		<p:dialog  id="TabelaIndiRecolhFGTS" widgetVar="TabelaIndiRecolhFGTS" header="Tabela de Ocorrncias" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			Preencher com “S” ou “N” para indicar se o empregador já efetuou arrecadao FGTS na Guia .<br></br>
+			de Recolhimento Rescisório para trabalhadores com movimentao Código Movimentacao I1, I2, I3, I4 ou L<br></br>
+			<br></br>
+			Se indicativo for igual a “S” o  valor da remunerao será considerado apenas para cálculo<br></br>
+			da contribuio previdenciária. <br></br>
+			<br></br><br></br>
+			Utiliza-se “C” para indicar a Remunerao Complementar do FGTS, sendo que a base de cálculo <br></br>
+			da Previdncia Social deverá ser diferente da remunerao para cálculo do FGTS.<br></br>
+		</p:dialog>	
+		
+		<p:dialog  id="TabelaTipoInscricaoEmpresa" widgetVar="TabelaTipoInscricaoEmpresa" header="Tabela Tipo Inscricao Empresa" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			Preencher  "1"  para (CNPJ)<br></br> 
+			Preencher  "2" para (CEI).
+		</p:dialog>	
+		
+		<p:dialog  id="TabelaIndiPositNegat" widgetVar="TabelaIndiPositNegat" header="Tabela Indi. Posit/Negat" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			Preencher  "0" para Positivo.<br></br> 
+			Preencher  "1" para Negativo.<br></br><br></br>
+			Obs:Este Campo serve para indicar se o valor devido à Previdncia Social - campo "Valor Dev. Compet 13" - é (0) positivo) ou (1) negativo.
+		</p:dialog>	
+		
+		
+		<p:dialog  id="TabelaCodigoRecolhimento" widgetVar="TabelaCodigoRecolhimento" header="Tabela de Código de Recolhimento" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			115 - Recolhimento ao FGTS e informações à Previdncia Social.<br></br> 
+			130 - Recolhimento ao FGTS e informações à Previdncia Social relativas ao trabalhador avulso portuário.<br></br> 
+			135 - Recolhimento e/ou declarao ao FGTS e informações à Previdncia Social relativas ao trabalhador avulso não portuário
+			145 - Recolhimento ao FGTS de diferenças apuradas pela CAIXA.<br></br> 
+			150 - Recolhimento ao FGTS e informações à Previdncia Social de empresa prestadora de serviços com cessão de mão-de-obra e empresa de trabalho temporário Lei nº
+			6.019/74, em relao aos empregados cedidos, ou de obra de construo civil – empreitada parcial.<br></br> 
+			155 - Recolhimento ao FGTS e informações à Previdncia Social de obra de construo civil – empreitada total ou obra própria.<br></br> 
+			211 - Declarao para a Previdncia Social de Cooperativa de Trabalho relativa aos contribuintes individuais cooperados que prestam serviços a tomadores.<br></br> 
+			307 - Recolhimento de Parcelamento de débito com o FGTS.<br></br> 
+			317 -  Recolhimento de Parcelamento de débito com o FGTS de empresa com tomador de serviços.<br></br> 
+			327 -  Recolhimento de Parcelamento de débito com o FGTS priorizando os valores devidos aos trabalhadores.<br></br> 
+			337 -  Recolhimento de Parcelamento de débito com o FGTS de empresas com tomador de serviços, priorizando os valores devidos aos trabalhadores.<br></br> 
+			345 -  Recolhimento de parcelamento de débito com o FGTS relativo a diferença de recolhimento, priorizando os valores devidos aos trabalhadores<br></br> 
+			418 -  Recolhimento recursal para o FGTS.<br></br> 
+			604 -  Recolhimento ao FGTS de entidades com fins filantrópicos – Decreto-Lei n° 194, de 24/02/1967 (competncias anteriores a 10/1989).<br></br> 
+			608 -  Recolhimento ao FGTS e informações à Previdncia Social relativo a dirigente sindical.<br></br> 
+			640 -  Recolhimento ao FGTS para empregado não optante (competncia anterior a 10/1988).<br></br> 
+			650 Recolhimento ao F -  GTS e Informações à Previdncia Social relativo a Anistiados, Reclamatória Trabalhista, Reclamatória Trabalhista com reconhecimento de vínculo,
+			Acordo ou Dissídio ou Conveno Coletiva, Comissão Conciliao Prévia ou Núcleo Intersindical Conciliao Trabalhista.<br></br> 
+			660 -  Recolhimento exclusivo ao FGTS relativo a Anistiados, Conversão Licença Saúde em Acidente Trabalho, Reclamatória Trabalhista, Acordo ou Dissídio ou Conveno
+			Coletiva, Comissão Conciliao Prévia ou Núcleo Intersindical Conciliao Trabalhista.<br></br> 
+		</p:dialog>	
+		
+		
+		<p:dialog  id="TabelaTipoInscricaoObra" widgetVar="TabelaTipoInscricaoObra" header="Tabela Tipo Inscricao Empresa" resizable="false" showEffect="clip" hideEffect="clip">
+		<p:ajax event="close" update="growl" />
+		<p:ajax event="move" update="growl" />										   
+			Preencher  "1"  para (CNPJ)<br></br> 
+			Preencher  "2" para (CEI).<br></br> <br></br> 
+			Ateno: Obrigatório para os códigos de recolhimento 130, 135, 211, 150, 155, 317, 337 e 608.<br></br> 
+
+		</p:dialog>	
+
+</h:body>
+</html>
